@@ -1,9 +1,13 @@
 import { Alert, Button, Card, Form } from "react-bootstrap";
+import { useState } from "react";
+
 import { SubmitForm } from "./controllers/submit";
+import { ScrollPageToTop } from "./controllers/scrolltotop";
 import { centeringStyle } from "../../styles/styles";
 
 import Logo from "../Logo/Logo";
-import { useState } from "react";
+
+let onCooldown: boolean = false;
 
 const cardOuterContainerStyle: any = {
     ...centeringStyle,
@@ -22,21 +26,54 @@ const cardContainerStyle: any = {
 // CONTACT FORM COMPONENT
 const ContactForm: React.FC = () => {
     let alertClearingTimeout: any;
+    let cooldownAlertClearingTimeout: any;
+
+    // STATES
+    const [submissionStatus, setSubmissionStatus]: any = useState({});
+    const [showCooldownAlert, setCooldownAlertState] = useState(false);
 
     // WHEN SUBMIT BUTTON IS PRESSED, SET STATE AFTER API REQUEST
-    const [submissionStatus, setSubmissionStatus]: any = useState({});
     const submitButtonPressed = async (event: any) => {
-        setSubmissionStatus({});
         clearTimeout(alertClearingTimeout);
+        clearTimeout(cooldownAlertClearingTimeout);
+
+        // RESET SUBMISSION STATE AND PREVENT DEFAULT 'SUBMIT' BEHAVIOR
+        setSubmissionStatus({});
+        event.preventDefault();
+
+        // DO NOT PROCEED IF COOLDOWN IS ACTIVE, SHOW A WARNING
+        if (onCooldown) {
+            setCooldownAlertState(true);
+            cooldownAlertClearingTimeout = setTimeout(() => {
+                setCooldownAlertState(false);
+            }, 5000);
+
+            // DO NOT CONTINUE AND SCROLL ALL THE WAY UP SO THE USER CAN SEE THE WARNING
+            ScrollPageToTop();
+            return;
+        }
+
+        // SET COOLDOWN
+        onCooldown = true;
+        setTimeout(() => {
+            onCooldown = false;
+
+            // RESET COOLDOWN-RELATED STATES JUST IN CASE
+            clearTimeout(cooldownAlertClearingTimeout);
+            setCooldownAlertState(false);
+        }, 15000);
 
         // WAIT FOR SUBMISSION
-        const res = await SubmitForm(event);
+        const res = await SubmitForm(event.target);
         setSubmissionStatus(res);
+
+        // SCROLL PAGE TO TOP SO USER CAN SEE ALERT
+        ScrollPageToTop();
 
         // CLEAR ALERT AFTER A BIT
         alertClearingTimeout = setTimeout(() => {
             setSubmissionStatus({});
-        }, 10000);
+        }, 11000);
     }
 
     // RETURN ELEMENT
@@ -47,13 +84,19 @@ const ContactForm: React.FC = () => {
                     <Card.Body>
                         {submissionStatus['success'] === true &&
                             <Alert key='success' variant='success'>
-                                The email has been submitted! Thank you so much!
+                                The email has been submitted! Thank you!
                             </Alert>
                         }
 
                         {submissionStatus['success'] === false &&
                             <Alert key='danger' variant='danger'>
                                 There was an error with sending the email! Please try again later!
+                            </Alert>
+                        }
+
+                        {showCooldownAlert && onCooldown &&
+                            <Alert key='warning' variant='warning'>
+                                You cannot send an email at this time! Please try again later!
                             </Alert>
                         }
 
