@@ -4,7 +4,7 @@ const accessKey: string = '9e66aaa8-8293-4f02-ae04-e006f4ef8c4e';
 
 /**
     * A function that is triggered when the contact form is filled out and the submit button is pressed.
-    * @returns `void` - This returns nothing.
+    * @returns `object` - This returns an object with a key of `success` and a boolean value.
 */
 export const SubmitForm = async (event: any) => {
     event.preventDefault();
