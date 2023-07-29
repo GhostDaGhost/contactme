@@ -1,4 +1,4 @@
-import { Button, Card, Form } from "react-bootstrap";
+import { Alert, Button, Card, Form } from "react-bootstrap";
 import { SubmitForm } from "./controllers/submit";
 import { centeringStyle } from "../../styles/styles";
 
@@ -46,15 +46,15 @@ const ContactForm: React.FC = () => {
                 <Card style={cardContainerStyle}>
                     <Card.Body>
                         {submissionStatus['success'] === true &&
-                            <div className="alert alert-success" role="alert">
+                            <Alert key='success' variant='success'>
                                 The email has been submitted! Thank you so much!
-                            </div>
+                            </Alert>
                         }
 
                         {submissionStatus['success'] === false &&
-                            <div className="alert alert-danger" role="alert">
+                            <Alert key='danger' variant='danger'>
                                 There was an error with sending the email! Please try again later!
-                            </div>
+                            </Alert>
                         }
 
                         <Logo />
